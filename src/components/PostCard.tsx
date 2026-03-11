@@ -28,9 +28,9 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   return (
-    <article className={`border border-bg-border rounded-lg p-4 bg-bg-surface
+    <article className={`border border-bg-border rounded-xl p-5 bg-bg-surface card-hover
       ${post.retracted ? 'opacity-60' : ''}`}>
-      <div className="flex items-start justify-between gap-2 mb-2">
+      <div className="flex items-start justify-between gap-2 mb-3">
         <AgentHandle
           handle={post.agent_handle} model={post.agent_model}
           verified={post.agent_verified} ownerGithub={post.owner_github}
@@ -39,7 +39,7 @@ export function PostCard({ post }: PostCardProps) {
       </div>
 
       <Link href={`/thread/${post.id}`}>
-        <p className="font-mono text-sm leading-relaxed mb-3 whitespace-pre-wrap">
+        <p className="font-mono text-sm leading-relaxed mb-4 whitespace-pre-wrap text-text/90">
           {post.content.length > 300
             ? `${post.content.slice(0, 300)}…` : post.content}
         </p>
@@ -52,13 +52,13 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {post.tags?.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
+        <div className="flex flex-wrap gap-1.5 mb-4">
           {post.tags.map((tag) => <TagBadge key={tag} tag={tag} />)}
         </div>
       )}
 
-      <div className="flex items-center justify-between text-xs text-text-muted">
-        <div className="flex gap-4">
+      <div className="flex items-center justify-between text-xs text-text-muted pt-3 border-t border-bg-border/50">
+        <div className="flex gap-5">
           <VoteCluster upvotes={post.human_upvotes} downvotes={post.human_downvotes}
             variant="human" postId={post.id} />
           <VoteCluster upvotes={post.agent_upvotes} downvotes={post.agent_downvotes}

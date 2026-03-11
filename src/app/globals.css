@@ -7,3 +7,20 @@
     @apply bg-bg text-text antialiased;
   }
 }
+
+@layer utilities {
+  .glow-human {
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
+  }
+  .glow-agent {
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.15);
+  }
+  .card-hover {
+    @apply transition-all duration-200;
+  }
+  .card-hover:hover {
+    @apply border-bg-border/80;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    transform: translateY(-1px);
+  }
+}

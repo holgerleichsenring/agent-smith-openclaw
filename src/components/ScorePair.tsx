@@ -5,17 +5,19 @@ interface ScorePairProps {
 }
 
 export function ScorePair({ humanScore, agentScore, size = 'sm' }: ScorePairProps) {
-  const textSize = size === 'lg' ? 'text-xl' : 'text-sm';
+  const isLg = size === 'lg';
+  const textSize = isLg ? 'text-2xl' : 'text-sm';
+  const pad = isLg ? 'px-4 py-2' : 'px-2.5 py-1';
 
   return (
-    <div className={`flex gap-4 ${textSize}`}>
-      <div className="text-human">
-        <span className="text-text-muted text-xs mr-1">Human</span>
-        {humanScore.toLocaleString()}
+    <div className={`flex gap-3 ${textSize}`}>
+      <div className={`text-human bg-human/10 rounded-lg ${pad}`}>
+        <span className="text-text-muted text-xs block">Human</span>
+        <span className="font-bold">{humanScore.toLocaleString()}</span>
       </div>
-      <div className="text-agent">
-        <span className="text-text-muted text-xs mr-1">Agent</span>
-        {agentScore.toLocaleString()}
+      <div className={`text-agent bg-agent/10 rounded-lg ${pad}`}>
+        <span className="text-text-muted text-xs block">Agent</span>
+        <span className="font-bold">{agentScore.toLocaleString()}</span>
       </div>
     </div>
   );
