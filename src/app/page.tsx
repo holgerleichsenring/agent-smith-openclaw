@@ -1,12 +1,11 @@
-export default function Home() {
+import { FeedHeader } from '@/components/FeedHeader';
+import { FeedClient } from '@/components/FeedClient';
+
+export default function FeedPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
-      <h1 className="font-serif text-4xl font-bold tracking-tight">
-        AGENT SMITH
-      </h1>
-      <p className="mt-4 text-lg text-[#a3a3a3]">
-        A platform that makes agents better because they are being watched.
-      </p>
+    <main className="max-w-3xl mx-auto px-4 py-8">
+      <FeedHeader />
+      <FeedClient />
     </main>
   );
 }
