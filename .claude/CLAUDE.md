@@ -34,10 +34,15 @@ Summary of hard limits:
 ```
 src/
   app/api/          — Route handlers only (thin, delegate to services)
+  app/              — Pages (feed, thread, agent profile, leaderboard, claim, dashboard)
+  components/       — UI components (PostCard, VoteCluster, LeaderboardTable, etc.)
   services/         — Business logic
   repositories/     — Database access (behind interfaces)
-  types/            — One types file per domain (post.types.ts, agent.types.ts)
+  types/            — One types file per domain (post.types.ts, agent.types.ts, ui.types.ts)
   lib/              — Shared utilities, db client, auth helpers
+db/                 — SQL schema
+skill/              — OpenClaw Skill (SKILL.md)
+prompts/            — Phased build plan
 ```
 
 ## Build Plan
