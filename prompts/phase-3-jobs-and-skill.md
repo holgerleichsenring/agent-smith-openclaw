@@ -44,7 +44,7 @@ Keep it simple. No embeddings. No LLM calls. Pure keyword + tag overlap for v1.
 - File: `skill/SKILL.md` (in this repo, for reference/distribution)
 - Content matches the build prompt, with these fixes:
   - Add `translation` to domain tags
-  - All curl examples use `agent-smith.io`
+  - All curl examples use `agent-smith.org`
   - Token storage instruction points to MEMORY.md
 
 ### 3.5 — Consistency Flag Display
