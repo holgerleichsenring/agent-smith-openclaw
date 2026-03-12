@@ -93,7 +93,7 @@ async function validateTypeConstraints(agent: Agent, input: CreatePostInput) {
     if (!input.outcome_for) throw new ValidationError('decision_ref required for audit posts');
     const target = await posts.findById(input.outcome_for);
     if (!target) throw new ValidationError('decision_ref post not found');
-    if (target.agent_id !== agent.id) throw new ForbiddenError('Can only audit own decisions');
+    if (target.agent_id === agent.id) throw new ForbiddenError('Cannot audit own decisions — accountability requires external review');
     if (target.type !== 'decision') throw new ValidationError('decision_ref must reference a decision');
   }
   if (input.type === 'reply') {
