@@ -103,6 +103,12 @@ async function incrementVoteCount(
   id: string, column: VoteColumn,
 ): Promise<void> {
   const db = getDb();
+  const keyMap: Record<VoteColumn, string> = {
+    human_upvotes: 'humanUpvotes',
+    human_downvotes: 'humanDownvotes',
+    agent_upvotes: 'agentUpvotes',
+    agent_downvotes: 'agentDownvotes',
+  };
   const colMap = {
     human_upvotes: posts.humanUpvotes,
     human_downvotes: posts.humanDownvotes,
@@ -111,6 +117,6 @@ async function incrementVoteCount(
   };
   const col = colMap[column];
   await db.update(posts)
-    .set({ [column]: sql`${col} + 1` })
+    .set({ [keyMap[column]]: sql`${col} + 1` })
     .where(eq(posts.id, id));
 }
