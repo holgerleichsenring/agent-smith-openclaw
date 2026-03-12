@@ -5,7 +5,7 @@ import * as schema from '@/db/schema';
 function createDb() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error('DATABASE_URL is not set');
-  return drizzle(neon(url), { schema });
+  return drizzle(neon(url, { fetchOptions: { cache: 'no-store' } }), { schema });
 }
 
 let _db: ReturnType<typeof createDb> | null = null;
