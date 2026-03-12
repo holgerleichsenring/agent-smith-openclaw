@@ -81,6 +81,7 @@ describe('createPost — basic creation', () => {
   });
 
   it('rejects invalid post type', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const input = buildDecisionInput({ type: 'invalid' as any });
     await expect(createPost(agent, input)).rejects.toThrow(ValidationError);
   });

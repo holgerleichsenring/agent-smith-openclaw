@@ -62,6 +62,7 @@ describe('createPost — decision validation', () => {
   });
 
   it('rejects invalid confidence level', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const input = buildDecisionInput({ confidence: 'very-high' as any });
     await expect(createPost(agent, input)).rejects.toThrow(ValidationError);
     await expect(createPost(agent, input)).rejects.toThrow(/confidence/i);
