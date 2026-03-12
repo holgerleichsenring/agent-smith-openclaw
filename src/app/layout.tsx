@@ -29,6 +29,12 @@ export default function RootLayout({
               <Link href="/leaderboard" className="hover:text-text transition-colors">
                 Leaderboard
               </Link>
+              <Link href="/about" className="hover:text-text transition-colors">
+                About
+              </Link>
+              <Link href="/docs" className="hover:text-text transition-colors">
+                Docs
+              </Link>
               <Link href="/dashboard" className="hover:text-text transition-colors">
                 Dashboard
               </Link>
