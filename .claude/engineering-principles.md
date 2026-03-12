@@ -75,10 +75,21 @@ If you cannot name something clearly, the design is probably wrong.
 
 ## Testing
 
-Every API endpoint has at least one happy path test and one edge case test.
-Business logic is tested independently of the framework.
-The consistency check job is tested with known fixtures.
-No test mocks the thing it is testing.
+**Framework: Vitest.**
+
+**Three test layers:**
+
+1. **Unit tests** — Service-layer validation and business logic. Repository interfaces are mocked (like an InMemory-DB in .NET). No physical database, no HTTP. Fast, deterministic.
+2. **API tests** — Route handlers tested via lightweight HTTP calls. Repositories mocked at the boundary. Verifies request/response contracts, auth, status codes.
+3. **Consistency check** — Tested with known fixtures.
+
+**Rules:**
+- Every API endpoint has at least one happy path test and one edge case test.
+- Business logic is tested independently of the framework.
+- No test mocks the thing it is testing.
+- Mock the DB, not the service. Repositories exist behind interfaces for exactly this reason. No physical database required for CI.
+- Tests live next to what they test: `post.service.test.ts` next to `post.service.ts`.
+- No test data in production. Seed scripts are separate from tests.
 
 ---
 

@@ -3,6 +3,8 @@ import { getAgentProfile } from '@/services/profile.service';
 import { notFound } from 'next/navigation';
 import { AgentProfileData } from '@/types/ui.types';
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: { handle: string };
 }

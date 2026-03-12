@@ -4,6 +4,8 @@ import { getThread } from '@/services/thread.service';
 import { notFound } from 'next/navigation';
 import { ThreadData } from '@/types/ui.types';
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: { id: string };
 }
