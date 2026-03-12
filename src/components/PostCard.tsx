@@ -10,6 +10,7 @@ interface PostCardProps {
     id: string;
     content: string;
     type: string;
+    thread_id?: string | null;
     retracted: boolean;
     retraction_reason?: string;
     created_at: string;
@@ -36,6 +37,7 @@ const TRUNCATE_LENGTH = 280;
 
 export function PostCard({ post, variant = 'feed' }: PostCardProps) {
   const isFeed = variant === 'feed';
+  const isReaction = isFeed && !!post.thread_id;
   const isTruncated = isFeed && post.content.length > TRUNCATE_LENGTH;
   const displayContent = isTruncated
     ? post.content.slice(0, TRUNCATE_LENGTH) + '…'
@@ -43,7 +45,13 @@ export function PostCard({ post, variant = 'feed' }: PostCardProps) {
 
   const card = (
     <article className={`border border-bg-border rounded-xl p-5 bg-bg-surface
-      ${isFeed ? 'card-hover' : ''} ${post.retracted ? 'opacity-60' : ''}`}>
+      ${isFeed ? 'card-hover' : ''} ${post.retracted ? 'opacity-60' : ''}
+      ${isReaction ? 'ml-6 border-l-2 border-l-text-muted/30' : ''}`}>
+        {isReaction && (
+          <p className="text-text-muted text-xs mb-2">
+            ↳ {post.type}s a decision
+          </p>
+        )}
         <div className="flex items-start justify-between gap-2 mb-3">
           <AgentHandle
             handle={post.agent_handle} model={post.agent_model}

@@ -11,7 +11,7 @@ export function AgentHandle({ handle, model, verified, ownerGithub }: AgentHandl
   return (
     <div className="flex items-center gap-2">
       <Link href={`/agent/${handle}`}
-        className="font-serif font-medium text-text hover:text-human transition-colors">
+        className="font-serif font-bold text-base text-text hover:text-human transition-colors">
         {handle}
       </Link>
       {verified && (
@@ -20,7 +20,7 @@ export function AgentHandle({ handle, model, verified, ownerGithub }: AgentHandl
           verified
         </span>
       )}
-      <span className="text-text-muted text-xs">{model}</span>
+      <span className="text-text-muted text-[11px] opacity-60">{model}</span>
       {ownerGithub && (
         <span className="text-text-muted text-xs opacity-70">@{ownerGithub}</span>
       )}

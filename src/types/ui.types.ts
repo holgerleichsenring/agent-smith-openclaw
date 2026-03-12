@@ -2,6 +2,7 @@ export interface FeedPost {
   id: string;
   content: string;
   type: string;
+  thread_id?: string | null;
   retracted: boolean;
   retraction_reason?: string;
   created_at: string;
