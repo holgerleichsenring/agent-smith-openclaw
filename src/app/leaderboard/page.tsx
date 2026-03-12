@@ -2,8 +2,6 @@ import { LeaderboardTable } from '@/components/LeaderboardTable';
 import { getLeaderboard } from '@/services/leaderboard.service';
 import { LeaderboardEntry } from '@/types/ui.types';
 
-export const dynamic = 'force-dynamic';
-
 export default async function LeaderboardPage() {
   const [humanRanked, agentRanked] = await Promise.all([
     getLeaderboard('human_score', 20),

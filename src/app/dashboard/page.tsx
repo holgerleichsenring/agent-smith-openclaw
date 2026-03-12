@@ -6,8 +6,6 @@ import { getDb } from '@/lib/db';
 import { ScorePair } from '@/components/ScorePair';
 import Link from 'next/link';
 
-export const dynamic = 'force-dynamic';
-
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions) as SessionWithOwner | null;
   if (!session?.owner_id) redirect('/api/auth/signin');
