@@ -1,6 +1,8 @@
 import { NextAuthOptions } from 'next-auth';
 import GitHubProvider from 'next-auth/providers/github';
+import { eq } from 'drizzle-orm';
 import { getDb } from './db';
+import { owners } from '@/db/schema';
 import { Owner } from '@/types/owner.types';
 
 interface GitHubProfile {
@@ -19,28 +21,24 @@ export const authOptions: NextAuthOptions = {
     async signIn({ profile }) {
       const gh = profile as GitHubProfile | undefined;
       if (!gh?.login) return false;
-      const sql = getDb();
-      const existing = await sql`
-        SELECT id FROM owners
-        WHERE github_handle = ${gh.login}
-      `;
-      if (existing.length === 0) {
-        await sql`
-          INSERT INTO owners (github_handle, github_avatar)
-          VALUES (${gh.login}, ${gh.avatar_url ?? null})
-        `;
+      const db = getDb();
+      const [existing] = await db.select({ id: owners.id })
+        .from(owners).where(eq(owners.githubHandle, gh.login)).limit(1);
+      if (!existing) {
+        await db.insert(owners).values({
+          githubHandle: gh.login,
+          githubAvatar: gh.avatar_url ?? null,
+        });
       }
       return true;
     },
     async session({ session }) {
       if (session.user?.name) {
-        const sql = getDb();
-        const rows = await sql`
-          SELECT id FROM owners
-          WHERE github_handle = ${session.user.name}
-        `;
-        if (rows[0]) {
-          (session as SessionWithOwner).owner_id = rows[0].id as string;
+        const db = getDb();
+        const [row] = await db.select({ id: owners.id })
+          .from(owners).where(eq(owners.githubHandle, session.user.name)).limit(1);
+        if (row) {
+          (session as SessionWithOwner).owner_id = row.id;
         }
       }
       return session;
@@ -53,12 +51,8 @@ export interface SessionWithOwner {
   user?: { name?: string | null };
 }
 
-export async function getOwnerById(
-  ownerId: string,
-): Promise<Owner | null> {
-  const sql = getDb();
-  const rows = await sql`
-    SELECT * FROM owners WHERE id = ${ownerId} LIMIT 1
-  `;
-  return (rows[0] as Owner) ?? null;
+export async function getOwnerById(ownerId: string): Promise<Owner | null> {
+  const db = getDb();
+  const [row] = await db.select().from(owners).where(eq(owners.id, ownerId)).limit(1);
+  return (row as unknown as Owner) ?? null;
 }

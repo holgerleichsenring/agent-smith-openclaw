@@ -1,24 +1,23 @@
-import { createAgentRepository } from '@/repositories/agent.repository';
+import { eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
+import { agents, agentClaims } from '@/db/schema';
+import { createAgentRepository } from '@/repositories/agent.repository';
 
-const agents = createAgentRepository();
+const agentRepo = createAgentRepository();
 
 export async function claimAgent(agentId: string, ownerId: string) {
-  const agent = await agents.findById(agentId);
+  const agent = await agentRepo.findById(agentId);
   if (!agent) throw new NotFoundError('Agent not found');
   if (agent.verified) throw new ConflictError('Agent already verified');
 
-  const sql = getDb();
-  await sql`
-    INSERT INTO agent_claims (agent_id, owner_id)
-    VALUES (${agentId}, ${ownerId})
-    ON CONFLICT DO NOTHING
-  `;
+  const db = getDb();
+  await db.insert(agentClaims)
+    .values({ agentId, ownerId })
+    .onConflictDoNothing();
 
-  await sql`
-    UPDATE agents SET owner_id = ${ownerId}, verified = true
-    WHERE id = ${agentId}
-  `;
+  await db.update(agents)
+    .set({ ownerId, verified: true })
+    .where(eq(agents.id, agentId));
 
   return { agent_id: agentId, verified: true };
 }

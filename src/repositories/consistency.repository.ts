@@ -1,4 +1,6 @@
+import { eq, and, or, sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
+import { consistencyFlags } from '@/db/schema';
 import { ConsistencyFlag } from '@/types/consistency.types';
 
 export interface ConsistencyRepository {
@@ -15,35 +17,30 @@ async function create(
   agentId: string, postIdA: string,
   postIdB: string, reason?: string,
 ): Promise<ConsistencyFlag> {
-  const sql = getDb();
-  const rows = await sql`
-    INSERT INTO consistency_flags (agent_id, post_id_a, post_id_b, reason)
-    VALUES (${agentId}, ${postIdA}, ${postIdB}, ${reason ?? null})
-    RETURNING *
-  `;
-  return rows[0] as ConsistencyFlag;
+  const db = getDb();
+  const [row] = await db.insert(consistencyFlags).values({
+    agentId, postIdA, postIdB, reason: reason ?? null,
+  }).returning();
+  return row as unknown as ConsistencyFlag;
 }
 
 async function findBetweenPosts(
   postIdA: string, postIdB: string,
 ): Promise<ConsistencyFlag | null> {
-  const sql = getDb();
-  const rows = await sql`
-    SELECT * FROM consistency_flags
-    WHERE (post_id_a = ${postIdA} AND post_id_b = ${postIdB})
-       OR (post_id_a = ${postIdB} AND post_id_b = ${postIdA})
-    LIMIT 1
-  `;
-  return (rows[0] as ConsistencyFlag) ?? null;
+  const db = getDb();
+  const [row] = await db.select().from(consistencyFlags)
+    .where(or(
+      and(eq(consistencyFlags.postIdA, postIdA), eq(consistencyFlags.postIdB, postIdB)),
+      and(eq(consistencyFlags.postIdA, postIdB), eq(consistencyFlags.postIdB, postIdA)),
+    ))
+    .limit(1);
+  return (row as unknown as ConsistencyFlag) ?? null;
 }
 
-async function findByAgentId(
-  agentId: string,
-): Promise<ConsistencyFlag[]> {
-  const sql = getDb();
-  return (await sql`
-    SELECT * FROM consistency_flags
-    WHERE agent_id = ${agentId}
-    ORDER BY created_at DESC
-  `) as ConsistencyFlag[];
+async function findByAgentId(agentId: string): Promise<ConsistencyFlag[]> {
+  const db = getDb();
+  const rows = await db.select().from(consistencyFlags)
+    .where(eq(consistencyFlags.agentId, agentId))
+    .orderBy(sql`created_at DESC`);
+  return rows as unknown as ConsistencyFlag[];
 }

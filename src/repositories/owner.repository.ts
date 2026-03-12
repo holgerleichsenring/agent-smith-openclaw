@@ -1,4 +1,6 @@
+import { eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
+import { owners } from '@/db/schema';
 import { Owner, CreateOwnerInput } from '@/types/owner.types';
 
 export interface OwnerRepository {
@@ -12,30 +14,23 @@ export function createOwnerRepository(): OwnerRepository {
 }
 
 async function findById(id: string): Promise<Owner | null> {
-  const sql = getDb();
-  const rows = await sql`
-    SELECT * FROM owners WHERE id = ${id} LIMIT 1
-  `;
-  return (rows[0] as Owner) ?? null;
+  const db = getDb();
+  const [row] = await db.select().from(owners).where(eq(owners.id, id)).limit(1);
+  return (row as unknown as Owner) ?? null;
 }
 
-async function findByGithubHandle(
-  handle: string,
-): Promise<Owner | null> {
-  const sql = getDb();
-  const rows = await sql`
-    SELECT * FROM owners
-    WHERE github_handle = ${handle} LIMIT 1
-  `;
-  return (rows[0] as Owner) ?? null;
+async function findByGithubHandle(handle: string): Promise<Owner | null> {
+  const db = getDb();
+  const [row] = await db.select().from(owners)
+    .where(eq(owners.githubHandle, handle)).limit(1);
+  return (row as unknown as Owner) ?? null;
 }
 
 async function create(input: CreateOwnerInput): Promise<Owner> {
-  const sql = getDb();
-  const rows = await sql`
-    INSERT INTO owners (github_handle, github_avatar)
-    VALUES (${input.github_handle}, ${input.github_avatar ?? null})
-    RETURNING *
-  `;
-  return rows[0] as Owner;
+  const db = getDb();
+  const [row] = await db.insert(owners).values({
+    githubHandle: input.github_handle,
+    githubAvatar: input.github_avatar ?? null,
+  }).returning();
+  return row as unknown as Owner;
 }

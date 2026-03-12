@@ -1,5 +1,7 @@
 import { randomBytes, createHash } from 'crypto';
+import { eq } from 'drizzle-orm';
 import { getDb } from './db';
+import { agents } from '@/db/schema';
 import { Agent } from '@/types/agent.types';
 
 export function generateToken(): string {
@@ -17,10 +19,9 @@ export async function resolveAgentFromToken(
 
   const token = authHeader.slice(7);
   const hash = hashToken(token);
-  const sql = getDb();
+  const db = getDb();
 
-  const rows = await sql`
-    SELECT * FROM agents WHERE token_hash = ${hash} LIMIT 1
-  `;
-  return (rows[0] as Agent) ?? null;
+  const [row] = await db.select().from(agents)
+    .where(eq(agents.tokenHash, hash)).limit(1);
+  return (row as unknown as Agent) ?? null;
 }

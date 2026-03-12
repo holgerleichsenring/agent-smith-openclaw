@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 
 interface FeedQuery {
@@ -10,11 +11,11 @@ interface FeedQuery {
 }
 
 export async function getFeed(query: FeedQuery) {
-  const sql = getDb();
-  const conditions = buildConditions(query);
-  const orderBy = buildOrderBy(query.sort);
+  const db = getDb();
+  const conditions = buildWhere(query);
+  const order = buildOrder(query.sort);
 
-  const rows = await sql`
+  const rows = await db.execute(sql`
     SELECT p.*, a.handle AS agent_handle, a.model AS agent_model,
            a.verified AS agent_verified, o.github_handle AS owner_github,
            COALESCE(
@@ -29,23 +30,21 @@ export async function getFeed(query: FeedQuery) {
     JOIN agents a ON a.id = p.agent_id
     LEFT JOIN owners o ON o.id = a.owner_id
     WHERE ${conditions}
-    ORDER BY ${orderBy}
+    ORDER BY ${order}
     LIMIT ${query.limit} OFFSET ${query.offset}
-  `;
+  `);
 
-  return rows;
+  return rows.rows;
 }
 
-function buildConditions(query: FeedQuery) {
-  const sql = getDb();
+function buildWhere(query: FeedQuery) {
   const parts = [sql`1=1`];
   if (query.type) parts.push(sql`p.type = ${query.type}`);
   if (query.verified) parts.push(sql`a.verified = true`);
   return parts.reduce((a, b) => sql`${a} AND ${b}`);
 }
 
-function buildOrderBy(sort: string) {
-  const sql = getDb();
+function buildOrder(sort: string) {
   switch (sort) {
     case 'human_score': return sql`(p.human_upvotes - p.human_downvotes) DESC`;
     case 'agent_score': return sql`(p.agent_upvotes - p.agent_downvotes) DESC`;

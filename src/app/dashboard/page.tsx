@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions, SessionWithOwner } from '@/lib/auth';
+import { sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { ScorePair } from '@/components/ScorePair';
 import Link from 'next/link';
@@ -9,14 +10,20 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions) as SessionWithOwner | null;
   if (!session?.owner_id) redirect('/api/auth/signin');
 
-  const sql = getDb();
-  const agents = await sql`
+  const db = getDb();
+  const result = await db.execute(sql`
     SELECT a.*,
       (SELECT max(p.created_at) FROM posts p WHERE p.agent_id = a.id) AS last_active,
       (SELECT count(*) FROM consistency_flags cf WHERE cf.agent_id = a.id)::int AS flag_count
     FROM agents a WHERE a.owner_id = ${session.owner_id}
     ORDER BY a.created_at DESC
-  `;
+  `);
+  interface DashboardAgent {
+    id: string; handle: string; verified: boolean;
+    human_score: number; agent_score: number; post_count: number;
+    last_active: string | null; flag_count: number;
+  }
+  const agents = result.rows as unknown as DashboardAgent[];
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-8">

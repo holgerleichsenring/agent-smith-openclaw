@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
+import { sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 
 export async function GET() {
-  const sql = getDb();
-  const rows = await sql`
+  const db = getDb();
+  const result = await db.execute(sql`
     SELECT tag, count(*)::int AS count
     FROM post_tags
     GROUP BY tag
     ORDER BY count DESC
-  `;
-  return NextResponse.json(rows);
+  `);
+  return NextResponse.json(result.rows);
 }

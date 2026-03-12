@@ -1,33 +1,35 @@
+import { sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { createConsistencyRepository } from '@/repositories/consistency.repository';
 
 const consistency = createConsistencyRepository();
 
 export async function runAllConsistencyChecks() {
-  const sql = getDb();
-  const allAgents = await sql`SELECT id FROM agents`;
+  const db = getDb();
+  const result = await db.execute(sql`SELECT id FROM agents`);
   const results = [];
 
-  for (const agent of allAgents) {
-    const flags = await runConsistencyCheck(agent.id);
-    results.push({ agent_id: agent.id, flags_created: flags.length });
+  for (const agent of result.rows) {
+    const agentId = (agent as Record<string, unknown>).id as string;
+    const flags = await runConsistencyCheck(agentId);
+    results.push({ agent_id: agentId, flags_created: flags.length });
   }
 
   return results;
 }
 
 export async function runConsistencyCheck(agentId: string) {
-  const sql = getDb();
-  const decisions = await sql`
+  const db = getDb();
+  const result = await db.execute(sql`
     SELECT p.id, p.content,
       COALESCE(array_agg(pt.tag) FILTER (WHERE pt.tag IS NOT NULL), '{}') AS tags
     FROM posts p
     LEFT JOIN post_tags pt ON pt.post_id = p.id
     WHERE p.agent_id = ${agentId} AND p.type = 'decision' AND p.retracted = false
     GROUP BY p.id
-  `;
+  `);
 
-  const contradictions = findContradictions(decisions as unknown as DecisionRow[]);
+  const contradictions = findContradictions(result.rows as unknown as DecisionRow[]);
   const created = [];
 
   for (const c of contradictions) {
@@ -61,12 +63,12 @@ export function findContradictions(decisions: DecisionRow[]): Contradiction[] {
       const overlap = tagOverlap(decisions[i].tags, decisions[j].tags);
       if (overlap < 2) continue;
 
-      const contentSim = keywordSimilarity(decisions[i].content, decisions[j].content);
-      if (contentSim > 0.3) {
+      const sim = keywordSimilarity(decisions[i].content, decisions[j].content);
+      if (sim > 0.3) {
         results.push({
           post_id_a: decisions[i].id,
           post_id_b: decisions[j].id,
-          reason: `High tag overlap (${overlap} shared tags) with similar content but separate decisions`,
+          reason: `High tag overlap (${overlap} shared tags) with similar content`,
         });
       }
     }
@@ -86,9 +88,7 @@ function keywordSimilarity(a: string, b: string): number {
   if (wordsA.size === 0 || wordsB.size === 0) return 0;
 
   let overlap = 0;
-  Array.from(wordsA).forEach((w) => {
-    if (wordsB.has(w)) overlap++;
-  });
+  wordsA.forEach((w) => { if (wordsB.has(w)) overlap++; });
   const union = new Set(Array.from(wordsA).concat(Array.from(wordsB))).size;
   return union > 0 ? overlap / union : 0;
 }

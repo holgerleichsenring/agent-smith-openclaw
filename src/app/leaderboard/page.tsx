@@ -14,8 +14,8 @@ export default async function LeaderboardPage() {
     <main className="max-w-5xl mx-auto px-4 py-8">
       <h1 className="font-serif text-3xl font-bold mb-8">Leaderboard</h1>
       <div className="grid md:grid-cols-2 gap-8">
-        <LeaderboardTable entries={humanRanked as LeaderboardEntry[]} variant="human" />
-        <LeaderboardTable entries={agentRanked as LeaderboardEntry[]} variant="agent" />
+        <LeaderboardTable entries={humanRanked as unknown as LeaderboardEntry[]} variant="human" />
+        <LeaderboardTable entries={agentRanked as unknown as LeaderboardEntry[]} variant="agent" />
       </div>
     </main>
   );

@@ -1,4 +1,6 @@
+import { eq, sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
+import { posts } from '@/db/schema';
 import { Post, VoteColumn, Alternative, ConfidenceLevel } from '@/types/post.types';
 
 export interface StructuredFields {
@@ -30,74 +32,68 @@ async function create(
   agentId: string, content: string, type: string,
   fields?: StructuredFields, threadId?: string, outcomeFor?: string,
 ): Promise<Post> {
-  const sql = getDb();
-  const rows = await sql`
-    INSERT INTO posts (agent_id, content, type, thread_id, outcome_for,
-      reasoning, alternatives, confidence, context)
-    VALUES (${agentId}, ${content}, ${type}, ${threadId ?? null}, ${outcomeFor ?? null},
-      ${fields?.reasoning ?? null},
-      ${fields?.alternatives ? JSON.stringify(fields.alternatives) : '[]'},
-      ${fields?.confidence ?? null}, ${fields?.context ?? null})
-    RETURNING *
-  `;
-  return rows[0] as Post;
+  const db = getDb();
+  const [row] = await db.insert(posts).values({
+    agentId, content, type,
+    threadId: threadId ?? null,
+    outcomeFor: outcomeFor ?? null,
+    reasoning: fields?.reasoning ?? null,
+    alternatives: fields?.alternatives ?? [],
+    confidence: fields?.confidence ?? null,
+    context: fields?.context ?? null,
+  }).returning();
+  return row as unknown as Post;
 }
 
 async function findById(id: string): Promise<Post | null> {
-  const sql = getDb();
-  const rows = await sql`SELECT * FROM posts WHERE id = ${id} LIMIT 1`;
-  return (rows[0] as Post) ?? null;
+  const db = getDb();
+  const [row] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+  return (row as unknown as Post) ?? null;
 }
 
 async function findByAgentId(agentId: string): Promise<Post[]> {
-  const sql = getDb();
-  return (await sql`
-    SELECT * FROM posts WHERE agent_id = ${agentId}
-    ORDER BY created_at DESC
-  `) as Post[];
+  const db = getDb();
+  const rows = await db.select().from(posts)
+    .where(eq(posts.agentId, agentId))
+    .orderBy(sql`created_at DESC`);
+  return rows as unknown as Post[];
 }
 
 async function findByThreadId(threadId: string): Promise<Post[]> {
-  const sql = getDb();
-  return (await sql`
-    SELECT * FROM posts WHERE thread_id = ${threadId}
-    ORDER BY created_at ASC
-  `) as Post[];
+  const db = getDb();
+  const rows = await db.select().from(posts)
+    .where(eq(posts.threadId, threadId))
+    .orderBy(sql`created_at ASC`);
+  return rows as unknown as Post[];
 }
 
 async function findOutcomesFor(postId: string): Promise<Post[]> {
-  const sql = getDb();
-  return (await sql`
-    SELECT * FROM posts WHERE outcome_for = ${postId}
-    ORDER BY created_at ASC
-  `) as Post[];
+  const db = getDb();
+  const rows = await db.select().from(posts)
+    .where(eq(posts.outcomeFor, postId))
+    .orderBy(sql`created_at ASC`);
+  return rows as unknown as Post[];
 }
 
 async function retract(id: string, reason: string): Promise<void> {
-  const sql = getDb();
-  await sql`
-    UPDATE posts
-    SET retracted = true, retraction_reason = ${reason}
-    WHERE id = ${id}
-  `;
+  const db = getDb();
+  await db.update(posts)
+    .set({ retracted: true, retractionReason: reason })
+    .where(eq(posts.id, id));
 }
 
 async function incrementVoteCount(
   id: string, column: VoteColumn,
 ): Promise<void> {
-  const sql = getDb();
-  switch (column) {
-    case 'human_upvotes':
-      await sql`UPDATE posts SET human_upvotes = human_upvotes + 1 WHERE id = ${id}`;
-      break;
-    case 'human_downvotes':
-      await sql`UPDATE posts SET human_downvotes = human_downvotes + 1 WHERE id = ${id}`;
-      break;
-    case 'agent_upvotes':
-      await sql`UPDATE posts SET agent_upvotes = agent_upvotes + 1 WHERE id = ${id}`;
-      break;
-    case 'agent_downvotes':
-      await sql`UPDATE posts SET agent_downvotes = agent_downvotes + 1 WHERE id = ${id}`;
-      break;
-  }
+  const db = getDb();
+  const colMap = {
+    human_upvotes: posts.humanUpvotes,
+    human_downvotes: posts.humanDownvotes,
+    agent_upvotes: posts.agentUpvotes,
+    agent_downvotes: posts.agentDownvotes,
+  };
+  const col = colMap[column];
+  await db.update(posts)
+    .set({ [column]: sql`${col} + 1` })
+    .where(eq(posts.id, id));
 }

@@ -1,12 +1,11 @@
+import { sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 
-export async function getLeaderboard(
-  sort: string, limit: number,
-) {
-  const sql = getDb();
-  const orderBy = resolveOrder(sort);
+export async function getLeaderboard(sort: string, limit: number) {
+  const db = getDb();
+  const order = resolveOrder(sort);
 
-  return sql`
+  const result = await db.execute(sql`
     SELECT a.handle, a.model, a.verified,
            a.human_score, a.agent_score, a.post_count,
            COALESCE(
@@ -20,13 +19,14 @@ export async function getLeaderboard(
            (SELECT count(*) FROM recommendations r
             WHERE r.recommended_agent_id = a.id)::int AS recommendation_count
     FROM agents a
-    ORDER BY ${orderBy}
+    ORDER BY ${order}
     LIMIT ${limit}
-  `;
+  `);
+
+  return result.rows;
 }
 
 function resolveOrder(sort: string) {
-  const sql = getDb();
   switch (sort) {
     case 'agent_score': return sql`a.agent_score DESC`;
     case 'recommendations':
