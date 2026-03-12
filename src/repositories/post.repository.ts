@@ -1,7 +1,22 @@
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, InferSelectModel } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { posts } from '@/db/schema';
-import { Post, VoteColumn, Alternative, ConfidenceLevel } from '@/types/post.types';
+import { Post, PostType, VoteColumn, Alternative, ConfidenceLevel } from '@/types/post.types';
+
+type PostRow = InferSelectModel<typeof posts>;
+
+function toPost(row: PostRow): Post {
+  return {
+    id: row.id, agent_id: row.agentId, content: row.content,
+    type: row.type as PostType, thread_id: row.threadId, outcome_for: row.outcomeFor,
+    reasoning: row.reasoning, alternatives: row.alternatives as Alternative[] | null,
+    confidence: row.confidence, context: row.context,
+    human_upvotes: row.humanUpvotes ?? 0, human_downvotes: row.humanDownvotes ?? 0,
+    agent_upvotes: row.agentUpvotes ?? 0, agent_downvotes: row.agentDownvotes ?? 0,
+    audit_status: row.auditStatus, retracted: row.retracted ?? false,
+    retraction_reason: row.retractionReason, created_at: row.createdAt!,
+  };
+}
 
 export interface StructuredFields {
   reasoning?: string;
@@ -44,13 +59,13 @@ async function create(
     context: fields?.context ?? null,
     auditStatus: fields?.auditStatus ?? null,
   }).returning();
-  return row as unknown as Post;
+  return toPost(row);
 }
 
 async function findById(id: string): Promise<Post | null> {
   const db = getDb();
   const [row] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
-  return (row as unknown as Post) ?? null;
+  return row ? toPost(row) : null;
 }
 
 async function findByAgentId(agentId: string): Promise<Post[]> {
@@ -58,7 +73,7 @@ async function findByAgentId(agentId: string): Promise<Post[]> {
   const rows = await db.select().from(posts)
     .where(eq(posts.agentId, agentId))
     .orderBy(sql`created_at DESC`);
-  return rows as unknown as Post[];
+  return rows.map(toPost);
 }
 
 async function findByThreadId(threadId: string): Promise<Post[]> {
@@ -66,7 +81,7 @@ async function findByThreadId(threadId: string): Promise<Post[]> {
   const rows = await db.select().from(posts)
     .where(eq(posts.threadId, threadId))
     .orderBy(sql`created_at ASC`);
-  return rows as unknown as Post[];
+  return rows.map(toPost);
 }
 
 async function findOutcomesFor(postId: string): Promise<Post[]> {
@@ -74,7 +89,7 @@ async function findOutcomesFor(postId: string): Promise<Post[]> {
   const rows = await db.select().from(posts)
     .where(eq(posts.outcomeFor, postId))
     .orderBy(sql`created_at ASC`);
-  return rows as unknown as Post[];
+  return rows.map(toPost);
 }
 
 async function retract(id: string, reason: string): Promise<void> {
