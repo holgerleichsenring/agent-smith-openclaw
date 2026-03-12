@@ -1,7 +1,7 @@
 import { createPostRepository } from '@/repositories/post.repository';
 import { createPostTagsRepository } from '@/repositories/post-tags.repository';
 import { createAgentRepository } from '@/repositories/agent.repository';
-import { CreatePostInput, POST_TYPES, CONFIDENCE_LEVELS } from '@/types/post.types';
+import { CreatePostInput, POST_TYPES, CONFIDENCE_LEVELS, AUDIT_STATUSES, AuditStatus } from '@/types/post.types';
 import { Agent } from '@/types/agent.types';
 
 const posts = createPostRepository();
@@ -9,6 +9,7 @@ const postTags = createPostTagsRepository();
 const agents = createAgentRepository();
 
 export async function createPost(agent: Agent, input: CreatePostInput) {
+  normalizeAuditInput(input);
   validatePostInput(input);
   validateStructuredFields(input);
   await validateTypeConstraints(agent, input);
@@ -18,6 +19,7 @@ export async function createPost(agent: Agent, input: CreatePostInput) {
     alternatives: input.alternatives,
     confidence: input.confidence,
     context: input.context,
+    auditStatus: input.audit_status,
   };
 
   const post = await posts.create(
@@ -47,6 +49,14 @@ function validateStructuredFields(input: CreatePostInput) {
     if (!input.reasoning?.trim()) throw new ValidationError('reasoning is required for decisions');
     if (!input.confidence) throw new ValidationError('confidence (low/medium/high) is required for decisions');
     if (!input.context?.trim()) throw new ValidationError('context is required for decisions');
+  }
+  if (input.type === 'audit') {
+    if (!input.audit_status) throw new ValidationError('status is required for audits');
+    if (!AUDIT_STATUSES.includes(input.audit_status as AuditStatus)) {
+      throw new ValidationError('status must be holds, revised, or retracted');
+    }
+    if (!input.content?.trim()) throw new ValidationError('lesson_learned is required for audits');
+    if (input.content.length > 500) throw new ValidationError('lesson_learned max 500 chars');
   }
   if (input.confidence && !CONFIDENCE_LEVELS.includes(input.confidence)) {
     throw new ValidationError('confidence must be low, medium, or high');
@@ -79,11 +89,24 @@ async function validateTypeConstraints(agent: Agent, input: CreatePostInput) {
     const target = await posts.findById(input.thread_id);
     if (!target) throw new ValidationError('thread_id post not found');
   }
+  if (input.type === 'audit') {
+    if (!input.outcome_for) throw new ValidationError('decision_ref required for audit posts');
+    const target = await posts.findById(input.outcome_for);
+    if (!target) throw new ValidationError('decision_ref post not found');
+    if (target.agent_id !== agent.id) throw new ForbiddenError('Can only audit own decisions');
+    if (target.type !== 'decision') throw new ValidationError('decision_ref must reference a decision');
+  }
   if (input.type === 'reply') {
     if (!input.thread_id) throw new ValidationError('thread_id required for replies');
     const target = await posts.findById(input.thread_id);
     if (!target) throw new ValidationError('thread_id post not found');
   }
+}
+
+function normalizeAuditInput(input: CreatePostInput) {
+  if (input.type !== 'audit') return;
+  if (input.lesson_learned) input.content = input.lesson_learned;
+  if (input.decision_ref) input.outcome_for = input.decision_ref;
 }
 
 export class ValidationError extends Error {

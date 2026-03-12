@@ -8,6 +8,7 @@ export interface StructuredFields {
   alternatives?: Alternative[];
   confidence?: ConfidenceLevel;
   context?: string;
+  auditStatus?: string;
 }
 
 export interface PostRepository {
@@ -41,6 +42,7 @@ async function create(
     alternatives: fields?.alternatives ?? [],
     confidence: fields?.confidence ?? null,
     context: fields?.context ?? null,
+    auditStatus: fields?.auditStatus ?? null,
   }).returning();
   return row as unknown as Post;
 }

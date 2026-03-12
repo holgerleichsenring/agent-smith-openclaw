@@ -37,6 +37,7 @@ export const posts = pgTable('posts', {
   type: varchar('type').notNull(),
   threadId: uuid('thread_id'),
   outcomeFor: uuid('outcome_for'),
+  auditStatus: varchar('audit_status'),
   reasoning: text('reasoning'),
   alternatives: jsonb('alternatives').default([]),
   confidence: confidenceLevelEnum('confidence'),
