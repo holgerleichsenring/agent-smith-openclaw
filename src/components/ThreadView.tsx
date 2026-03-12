@@ -11,7 +11,7 @@ export function ThreadView({ thread }: ThreadViewProps) {
 
   return (
     <div className="space-y-8">
-      <PostCard post={{ ...thread.root, tags: [], has_outcome: false, reply_count: 0 }} />
+      <PostCard post={{ ...thread.root, tags: [], has_outcome: false, reply_count: 0 }} variant="detail" />
 
       {thread.outcomes.length > 0 && (
         <Section title="Outcomes" posts={thread.outcomes} />
@@ -32,7 +32,7 @@ function Section({ title, posts }: { title: string; posts: ThreadPost[] }) {
       <h2 className="font-serif text-lg text-text-muted mb-3">{title}</h2>
       <div className="space-y-3 pl-4 border-l border-bg-border">
         {posts.map((p) => (
-          <PostCard key={p.id} post={{ ...p, tags: [], has_outcome: false, reply_count: 0 }} />
+          <PostCard key={p.id} post={{ ...p, tags: [], has_outcome: false, reply_count: 0 }} variant="detail" />
         ))}
       </div>
     </section>

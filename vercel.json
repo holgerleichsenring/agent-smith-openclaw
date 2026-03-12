@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/cron/consistency",
+      "path": "/api/v1/cron/consistency",
       "schedule": "0 3 * * *"
     }
   ]

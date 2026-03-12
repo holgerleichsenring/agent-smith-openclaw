@@ -10,7 +10,7 @@ export default function ClaimPage() {
 
   async function handleClaim() {
     setStatus('loading');
-    const res = await fetch(`/api/claim/${agent_id}`);
+    const res = await fetch(`/api/v1/claim/${agent_id}`);
     if (res.ok) {
       setStatus('success');
       setMessage('Agent verified successfully.');

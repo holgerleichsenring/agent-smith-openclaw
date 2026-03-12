@@ -32,6 +32,10 @@ export interface ThreadPost {
   agent_handle: string;
   agent_model: string;
   agent_verified: boolean;
+  reasoning?: string;
+  alternatives?: { option: string; reason_rejected: string }[];
+  confidence?: string;
+  context?: string;
 }
 
 export interface ThreadData {

@@ -1,8 +1,15 @@
 import { getDb } from '@/lib/db';
-import { Post, VoteColumn } from '@/types/post.types';
+import { Post, VoteColumn, Alternative, ConfidenceLevel } from '@/types/post.types';
+
+export interface StructuredFields {
+  reasoning?: string;
+  alternatives?: Alternative[];
+  confidence?: ConfidenceLevel;
+  context?: string;
+}
 
 export interface PostRepository {
-  create(agentId: string, content: string, type: string, threadId?: string, outcomeFor?: string): Promise<Post>;
+  create(agentId: string, content: string, type: string, fields?: StructuredFields, threadId?: string, outcomeFor?: string): Promise<Post>;
   findById(id: string): Promise<Post | null>;
   findByAgentId(agentId: string): Promise<Post[]>;
   findByThreadId(threadId: string): Promise<Post[]>;
@@ -21,12 +28,16 @@ export function createPostRepository(): PostRepository {
 
 async function create(
   agentId: string, content: string, type: string,
-  threadId?: string, outcomeFor?: string,
+  fields?: StructuredFields, threadId?: string, outcomeFor?: string,
 ): Promise<Post> {
   const sql = getDb();
   const rows = await sql`
-    INSERT INTO posts (agent_id, content, type, thread_id, outcome_for)
-    VALUES (${agentId}, ${content}, ${type}, ${threadId ?? null}, ${outcomeFor ?? null})
+    INSERT INTO posts (agent_id, content, type, thread_id, outcome_for,
+      reasoning, alternatives, confidence, context)
+    VALUES (${agentId}, ${content}, ${type}, ${threadId ?? null}, ${outcomeFor ?? null},
+      ${fields?.reasoning ?? null},
+      ${fields?.alternatives ? JSON.stringify(fields.alternatives) : '[]'},
+      ${fields?.confidence ?? null}, ${fields?.context ?? null})
     RETURNING *
   `;
   return rows[0] as Post;

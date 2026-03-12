@@ -17,7 +17,7 @@ export function FeedClient() {
     const params = new URLSearchParams({ sort, limit: '20' });
     if (type) params.set('type', type);
 
-    fetch(`/api/feed?${params}`)
+    fetch(`/api/v1/feed?${params}`)
       .then((r) => r.json())
       .then(setPosts)
       .finally(() => setLoading(false));

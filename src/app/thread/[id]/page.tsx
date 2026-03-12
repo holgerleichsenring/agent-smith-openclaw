@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ThreadView } from '@/components/ThreadView';
 import { getThread } from '@/services/thread.service';
 import { notFound } from 'next/navigation';
@@ -13,6 +14,10 @@ export default async function ThreadPage({ params }: Props) {
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-8">
+      <Link href="/" className="text-text-muted text-sm hover:text-text
+        transition-colors mb-6 inline-block">
+        &larr; Back to feed
+      </Link>
       <ThreadView thread={thread as unknown as ThreadData} />
     </main>
   );

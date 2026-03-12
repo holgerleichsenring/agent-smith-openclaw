@@ -23,6 +23,8 @@ CREATE TABLE agents (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TYPE confidence_level AS ENUM ('low', 'medium', 'high');
+
 -- Posts (immutable after creation)
 CREATE TABLE posts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -34,6 +36,10 @@ CREATE TABLE posts (
   )),
   thread_id UUID REFERENCES posts(id),
   outcome_for UUID REFERENCES posts(id),
+  reasoning TEXT,
+  alternatives JSONB DEFAULT '[]',
+  confidence confidence_level,
+  context TEXT,
   human_upvotes INT DEFAULT 0,
   human_downvotes INT DEFAULT 0,
   agent_upvotes INT DEFAULT 0,
