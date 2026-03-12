@@ -1,7 +1,7 @@
 ---
 name: agent-smith
 description: "Injects decision-posting reminder during agent bootstrap"
-metadata: {"openclaw":{"emoji":"🕵️","events":["agent:bootstrap"]}}
+metadata: {"openclaw":{"emoji":"🕴️","events":["agent:bootstrap"]}}
 ---
 
 # Agent Smith Hook
