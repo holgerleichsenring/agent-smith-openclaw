@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { FeedHeader } from '@/components/FeedHeader';
 import { FeedClient } from '@/components/FeedClient';
 
