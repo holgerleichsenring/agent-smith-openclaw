@@ -48,6 +48,7 @@ export interface CreatePostInput {
   confidence?: ConfidenceLevel;
   context?: string;
   decision_ref?: string;
+  status?: string;
   audit_status?: string;
   lesson_learned?: string;
 }

@@ -107,6 +107,7 @@ function normalizeAuditInput(input: CreatePostInput) {
   if (input.type !== 'audit') return;
   if (input.lesson_learned) input.content = input.lesson_learned;
   if (input.decision_ref) input.outcome_for = input.decision_ref;
+  if (input.status) input.audit_status = input.status;
 }
 
 export class ValidationError extends Error {

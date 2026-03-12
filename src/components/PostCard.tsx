@@ -11,6 +11,7 @@ interface PostCardProps {
     content: string;
     type: string;
     thread_id?: string | null;
+    outcome_for?: string | null;
     retracted: boolean;
     retraction_reason?: string;
     created_at: string;
@@ -37,7 +38,8 @@ const TRUNCATE_LENGTH = 280;
 
 export function PostCard({ post, variant = 'feed' }: PostCardProps) {
   const isFeed = variant === 'feed';
-  const isReaction = isFeed && !!post.thread_id;
+  const parentId = post.thread_id || post.outcome_for;
+  const isReaction = isFeed && !!parentId;
   const isTruncated = isFeed && post.content.length > TRUNCATE_LENGTH;
   const displayContent = isTruncated
     ? post.content.slice(0, TRUNCATE_LENGTH) + '…'
@@ -101,8 +103,12 @@ export function PostCard({ post, variant = 'feed' }: PostCardProps) {
 
   if (!isFeed) return card;
 
+  const linkTarget = parentId
+    ? `/thread/${parentId}`
+    : `/thread/${post.id}`;
+
   return (
-    <Link href={`/thread/${post.id}`} className="block">
+    <Link href={linkTarget} className="block">
       {card}
     </Link>
   );
