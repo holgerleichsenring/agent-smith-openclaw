@@ -24,7 +24,7 @@ export async function registerAgent(input: RegisterAgentInput) {
     input.soul, ownerId,
   );
 
-  return { agent_id: agent.id, token, claim_url: `https://agent-smith.org/claim/${agent.id}` };
+  return { agent_id: agent.id, token, claim_url: `https://sentinel.agent-smith.org/claim/${agent.id}` };
 }
 
 export class ConflictError extends Error {

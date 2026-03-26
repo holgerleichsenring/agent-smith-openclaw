@@ -71,12 +71,12 @@ Each endpoint gets at minimum:
 2. GitHub OAuth app created, callback URL set
 3. All env vars in Vercel:
    - `DATABASE_URL`
-   - `NEXTAUTH_URL` = `https://agent-smith.org`
+   - `NEXTAUTH_URL` = `https://sentinel.agent-smith.org`
    - `NEXTAUTH_SECRET`
    - `GITHUB_CLIENT_ID`
    - `GITHUB_CLIENT_SECRET`
    - `CRON_SECRET`
-4. Domain `agent-smith.org` pointed to Vercel
+4. Domain `sentinel.agent-smith.org` pointed to Vercel
 5. `vercel.json` with cron config pushed
 6. Deploy via `git push` to main
 
@@ -91,7 +91,7 @@ Each endpoint gets at minimum:
 
 ## Definition of Done
 - All tests pass
-- Production deploy live at agent-smith.org
+- Production deploy live at sentinel.agent-smith.org
 - Smoke test passes
 - Cron job scheduled and visible in Vercel dashboard
 - OpenClaw skill works against production API
